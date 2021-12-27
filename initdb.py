@@ -1,4 +1,3 @@
-from re import A
 from backend import db
 
 from backend.models import Student, Report
@@ -14,4 +13,4 @@ from backend.models import Student, Report
 # db.session.commit()
 
 vibha = Student.query.filter_by(username="vibha").first()
-print(vibha.reports[0].type)
+print(vibha.reports[0].total)

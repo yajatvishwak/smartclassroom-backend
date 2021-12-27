@@ -36,6 +36,7 @@ class SubmissionRequest(db.Model):
     title = db.Column(db.String(120))
     deadline = db.Column(db.String(100))
     desc = db.Column(db.String(256))
+    classid = db.Column(db.String(100))
     submissions = db.relationship("Submission", backref="submissionrequest")
     
 
