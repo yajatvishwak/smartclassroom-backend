@@ -24,20 +24,6 @@ def loginStudent():
     else:
         return jsonify({"message": "auth unsuccessful"})
 
-@app.route("/loginTeacher", methods=["POST"])
-def loginTeacher():
-    request_data = request.get_json()
-    username = request_data["username"]
-    password =  request_data["password"]
-    user = Teacher.query.filter_by(username=username).first()
-    print(user) 
-   # return jsonify(True)
-
-    if not user == None and user.password == password:
-        return jsonify({"message": "auth successful"})
-    else:
-        return jsonify({"message": "auth unsuccessful"})
-
 
 # student routes
 @app.route("/getNotification" , methods=["POST"])
@@ -77,7 +63,7 @@ def getSubmissionRequest():
 # teacher routes
 
 @app.route("/loginTeacher", methods = ["POST"])
-def loginStudent():
+def loginTeacher():
     request_data = request.get_json()
     username = request_data["username"]
     password =  request_data["password"]
@@ -135,7 +121,7 @@ def getTeacherNotification():
     print(allNotification)
     res = []
     for i in allNotification:
-        res.append({"title":i.title, "teacher": Teacher.query.filter_by(tid = i.tid).first().name , "priority": i.priority, "createdAt": "10.2.2" })
+        res.append({ "class": i.classid ,"title":i.title, "teacher": Teacher.query.filter_by(tid = i.tid).first().name , "priority": i.priority, "createdAt": "10.2.2" })
     return jsonify(res)
 
 
