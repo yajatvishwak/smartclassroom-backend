@@ -1,8 +1,12 @@
 from backend import app
 from flask.globals import request
 from flask.json import jsonify
-from backend.models import Notification, Student, Submission, SubmissionRequest, Teacher
+from backend.models import Notification, Student, StudentSchema, Submission, SubmissionRequest, Teacher, TeacherSchema
 from backend import db
+
+
+studentSchema = StudentSchema()
+teacherSchema = TeacherSchema()
 
 @app.route("/") 
 def hello():
@@ -16,7 +20,7 @@ def loginStudent():
     user = Student.query.filter_by(username=username).first()
     print(user)
     if not user == None and user.password == password:
-        return jsonify({"message": "auth successful"})
+        return jsonify({"message": "auth successful", "user": studentSchema.dump(user) })
     else:
         return jsonify({"message": "auth unsuccessful"})
 
@@ -62,14 +66,27 @@ def getSubmissionRequest():
     res = []
     for i in allSubmissionRequest:
         res.append({"title":i.title,
-         "teacher": Teacher.query.filter_by(tid = i.tid).first().name , 
+         "assignedTeacher": Teacher.query.filter_by(tid = i.tid).first().name , 
          "deadline": i.deadline,
-         "desc" : i.desc,
-         "srid" : i.srid
+         "description" : i.desc,
+         "submissionID" : i.srid,
+         "teacherPicture":"https://via.placeholder.com/50"
           })
     return jsonify(res)
 
 # teacher routes
+
+@app.route("/loginTeacher", methods = ["POST"])
+def loginStudent():
+    request_data = request.get_json()
+    username = request_data["username"]
+    password =  request_data["password"]
+    user = Teacher.query.filter_by(username=username).first()
+    print(user)
+    if not user == None and user.password == password:
+        return jsonify({"message": "auth successful", "user": teacherSchema.dump(user) })
+    else:
+        return jsonify({"message": "auth unsuccessful"})
 
 @app.route("/getTeacherSubmissionDetails" , methods=["POST"])
 def getTeacherSubmissionDetails():
