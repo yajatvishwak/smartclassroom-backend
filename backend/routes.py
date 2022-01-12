@@ -1,8 +1,11 @@
+from flask.scaffold import F
 from backend import app
 from flask.globals import request
 from flask.json import jsonify
-from backend.models import Notification, Student, StudentSchema, Submission, SubmissionRequest, Teacher, TeacherSchema
+from backend.models import Notification, Report, Student, StudentSchema, Submission, SubmissionRequest, Teacher, TeacherSchema
 from backend import db
+
+from collections import defaultdict
 
 
 studentSchema = StudentSchema()
@@ -161,3 +164,74 @@ def createSubmissionRequest():
     db.session.add(submissionRequest)
     db.session.commit()
     return jsonify({"message": "added successfully" , "statuscode": 200, })
+
+@app.route("/getAllStudents" , methods=["GET"])
+def getAllStudents():
+    # parameters required
+    # class, priority, title, tid
+    d= {}
+    l = [studentSchema.dump(i) for i in Student.query.filter_by().all()]
+    classes = []
+    for i in l:
+        classes.append(i["classid"])
+    classes = list(set(classes))
+    for i in classes:
+        d[i] = []
+    print(d)
+    for i in l:
+        print(d[i["classid"]])
+        d[i["classid"]].append(i["usn"])
+    return jsonify({"students": d, })
+
+@app.route("/addEntry" , methods=["POST"])
+def addEntry():
+    request_data  = request.get_json()
+    usn = request_data["usn"]
+    sid = Student.query.filter_by(usn=usn).first().sid
+    typeCategory = request_data["type"]
+    total = request_data["total"]
+    marksObtained = request_data["marksObtained"]
+    rep = Report(sid=sid, type=typeCategory ,total=total ,marksObtained=marksObtained)
+    db.session.add(rep)
+    db.session.commit()
+    return jsonify({"message": "added successfully" , "statuscode": 200, })
+
+@app.route("/getScores" , methods=["POST"])
+def getScores():
+    d={
+        "assignments" : [],
+        "cie": [],
+        "quiz": []
+    }
+    request_data  = request.get_json()
+    sid = request_data["sid"]
+    ass1 = Report.query.filter_by(sid=sid, type="Assignment1").first()
+    ass2 = Report.query.filter_by(sid=sid, type="Assignment2").first()
+    quiz1 = Report.query.filter_by(sid=sid, type="Quiz1").first()
+    quiz2 = Report.query.filter_by(sid=sid, type="Quiz2").first()
+    cie1 = Report.query.filter_by(sid=sid, type="CIE1").first()
+    cie2 = Report.query.filter_by(sid=sid, type="CIE2").first()
+    cie3 = Report.query.filter_by(sid=sid, type="CIE3").first()
+
+    if ass1 != None:
+        d["assignments"].append( {"name": ass1.type, "total": ass1.total, "marks": ass1.marksObtained})
+    if ass2 != None:
+        d["assignments"].append( {"name": ass2.type, "total": ass2.total, "marks": ass2.marksObtained})
+    if quiz1 != None:
+        d["quiz"].append( {"name": quiz1.type, "total": quiz1.total, "marks": quiz1.marksObtained})
+    if quiz2 != None:
+        d["quiz"].append( {"name": quiz2.type, "total": quiz2.total, "marks": quiz2.marksObtained})
+
+    if cie1 != None:
+        d["cie"].append( {"name": cie1.type, "total": cie1.total, "marks": cie1.marksObtained})
+    if cie2 != None:
+        d["cie"].append( {"name": cie2.type, "total": cie2.total, "marks": cie2.marksObtained})
+    if cie3 != None:
+        d["cie"].append( {"name": cie3.type, "total": cie3.total, "marks": cie3.marksObtained})
+    return jsonify(d)
+
+    
+    
+    
+    
+    
