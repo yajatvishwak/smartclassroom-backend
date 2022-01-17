@@ -65,6 +65,7 @@ class SubmissionRequest(db.Model):
     deadline = db.Column(db.String(100))
     desc = db.Column(db.String(256))
     classid = db.Column(db.String(100))
+    type = db.Column(db.String(100))
 
 class SubmissionRequestSchema(ma.SQLAlchemySchema):
     class Meta:

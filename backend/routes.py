@@ -59,7 +59,8 @@ def getSubmissionRequest():
          "deadline": i.deadline,
          "description" : i.desc,
          "submissionID" : i.srid,
-         "teacherPicture":"https://via.placeholder.com/50"
+         "teacherPicture":"https://via.placeholder.com/50",
+         "type": i.type
           })
     return jsonify(res)
 
@@ -154,12 +155,14 @@ def createSubmissionRequest():
     desc = request_data["desc"]
     deadline = request_data["deadline"]
     title = request_data["title"]
+    type1  = request_data["type"]
     submissionRequest = SubmissionRequest(
         tid=tid,
         title=title,
         deadline=deadline,
         desc=desc,
-        classid=targetClass
+        classid=targetClass,
+        type=type1
     )
     db.session.add(submissionRequest)
     db.session.commit()
@@ -195,6 +198,37 @@ def addEntry():
     db.session.add(rep)
     db.session.commit()
     return jsonify({"message": "added successfully" , "statuscode": 200, })
+
+
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+from werkzeug.utils import secure_filename
+import os
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route("/turnin" , methods=["POST"])
+def turnIn():
+    sid = request.form["sid"]
+    srid = request.form["srid"]
+    subtype = request.form["type"]
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    sub = Submission(sid = sid, srid = srid, type=subtype, filepath=filename)
+    db.session.add(sub)
+    db.session.commit()
+    return jsonify({"message": "done"})
+    
+from flask import send_file
+@app.route("/getfile" , methods=["POST"])
+def getFile():
+    request_data  = request.get_json()
+    file = request_data["file"] 
+    return send_file("D:\\vibhhhaa\\smartclassroom-backend\\uploads\\"+file)
+    
 
 @app.route("/getScores" , methods=["POST"])
 def getScores():
