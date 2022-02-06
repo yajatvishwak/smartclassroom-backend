@@ -1,5 +1,5 @@
 from flask.scaffold import F
-from backend import app
+from backend import UPLOAD_FOLDER, app
 from flask.globals import request
 from flask.json import jsonify
 from backend.models import Notification, Report, Student, StudentSchema, Submission, SubmissionRequest, Teacher, TeacherSchema
@@ -53,6 +53,7 @@ def getSubmissionRequest():
     allSubmissionRequest = SubmissionRequest.query.filter_by(classid = classOfStudent).all()
     #print(allSubmissionRequest)
     res = []
+
     for i in allSubmissionRequest:
         res.append({"title":i.title,
          "assignedTeacher": Teacher.query.filter_by(tid = i.tid).first().name , 
@@ -62,6 +63,7 @@ def getSubmissionRequest():
          "teacherPicture":"https://via.placeholder.com/50",
          "type": i.type
           })
+    print(res)
     return jsonify(res)
 
 # teacher routes
@@ -203,7 +205,6 @@ def addEntry():
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 from werkzeug.utils import secure_filename
 import os
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -223,11 +224,10 @@ def turnIn():
     return jsonify({"message": "done"})
     
 from flask import send_file
-@app.route("/getfile" , methods=["POST"])
+@app.route("/getfile" , methods=["GET"])
 def getFile():
-    request_data  = request.get_json()
-    file = request_data["file"] 
-    return send_file("D:\\vibhhhaa\\smartclassroom-backend\\uploads\\"+file)
+    file = request.args.get('file')
+    return send_file(os.path.join("../uploads", file ))
     
 
 @app.route("/getScores" , methods=["POST"])
